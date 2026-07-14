@@ -1,0 +1,60 @@
+name: NURO Receipt Automation
+
+on:
+  schedule:
+    - cron: '30 2 * * *' # 11:30 JST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Drive/Sheetsへ書き込まず動作確認する'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: nuro-receipt-automation
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Run NURO receipt automation
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          NURO_STORAGE_STATE: ${{ secrets.NURO_STORAGE_STATE }}
+          NURO_USER_ID: ${{ secrets.NURO_USER_ID }}
+          NURO_PASSWORD: ${{ secrets.NURO_PASSWORD }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          SPREADSHEET_ID: 1PJem3TPklN7PRuaGPT5enQmL2dduLo_wvDlL85iMd68
+          SHEET_NAME: インジ販売管理
+          DRIVE_FOLDER_ID: 1pwOhJL2a59ns__lhzerAYFhP4ofPZgHO
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: npm start
+
+      - name: Upload error screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuro-error-${{ github.run_id }}
+          path: tmp/nuro-error.png
+          if-no-files-found: ignore
+          retention-days: 7
