@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 import { google } from 'googleapis';
 import { config } from './config.mjs';
 
@@ -38,9 +37,10 @@ export async function findLatestNuroMail() {
 
 export async function uploadInvoice(filePath, fileName) {
   const drive = google.drive({ version: 'v3', auth: auth() });
+  const { createReadStream } = await import('node:fs');
   const created = await drive.files.create({
     requestBody: { name: fileName, parents: [config.driveFolderId] },
-    media: { mimeType: 'application/pdf', body: (await import('node:fs')).createReadStream(filePath) },
+    media: { mimeType: 'application/pdf', body: createReadStream(filePath) },
     fields: 'id,webViewLink'
   });
   return created.data.webViewLink || `https://drive.google.com/file/d/${created.data.id}/view`;
@@ -50,7 +50,7 @@ async function getLastRow(sheets) {
   const read = await sheets.spreadsheets.values.get({
     spreadsheetId: config.spreadsheetId,
     range: `'${config.sheetName}'!A6:K1006`,
-    valueRenderOption: 'UNFORMATTED_VALUE'
+    valueRenderOption: 'FORMATTED_VALUE'
   });
   const rows = read.data.values || [];
   let last = 5;
@@ -60,10 +60,14 @@ async function getLastRow(sheets) {
   return { last, rows };
 }
 
+function parseCurrency(value) {
+  return Number(String(value ?? '').replace(/[^\d.-]/g, ''));
+}
+
 export async function expenseExists(date, amount) {
   const sheets = google.sheets({ version: 'v4', auth: auth() });
   const { rows } = await getLastRow(sheets);
-  return rows.some(row => String(row[1] || '') === date && row[2] === 'NURO 光' && Number(row[8]) === Number(amount));
+  return rows.some(row => String(row[1] || '') === date && row[2] === 'NURO 光' && parseCurrency(row[8]) === Number(amount));
 }
 
 export async function appendExpense({ date, amount, receiptUrl }) {
@@ -102,8 +106,4 @@ export async function appendExpense({ date, amount, receiptUrl }) {
       ]
     }
   });
-}
-
-export async function writeStorageStateSecretFile(content, filePath) {
-  await fs.writeFile(filePath, content, 'utf8');
 }
