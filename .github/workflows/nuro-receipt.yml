@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/nuro-receipt.yml'
       - 'src/index.mjs'
-      - 'src/nuro.mjs'
+      - 'src/nuro-v3.mjs'
   schedule:
     - cron: '30 2 * * *' # 11:30 JST
   workflow_dispatch:
@@ -62,7 +62,7 @@ jobs:
           name: nuro-error-${{ github.run_id }}
           path: |
             tmp/nuro-error.png
-            tmp/nuro-debug.json
+            tmp/nuro-debug.txt
             tmp/nuro-debug.html
           if-no-files-found: ignore
           retention-days: 7
