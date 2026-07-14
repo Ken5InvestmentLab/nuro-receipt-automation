@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { gunzipSync } from 'node:zlib';
 import { chromium } from 'playwright';
 import { config } from './config.mjs';
 
@@ -74,6 +75,16 @@ async function downloadLatestPdf(page, downloadDir) {
   throw new Error('Could not locate or download a NURO invoice PDF. The page layout may have changed.');
 }
 
+function decodeStorageState(value) {
+  const trimmed = value.trim();
+  if (trimmed.startsWith('{')) return trimmed;
+  if (trimmed.startsWith('gz:')) {
+    const compressed = Buffer.from(trimmed.slice(3), 'base64');
+    return gunzipSync(compressed).toString('utf8');
+  }
+  return Buffer.from(trimmed, 'base64').toString('utf8');
+}
+
 export async function downloadNuroInvoice({ preferredUrl } = {}) {
   const tmp = path.resolve('tmp');
   await fs.mkdir(tmp, { recursive: true });
@@ -81,9 +92,8 @@ export async function downloadNuroInvoice({ preferredUrl } = {}) {
   let storageState;
   if (config.nuroStorageState) {
     const statePath = path.join(tmp, 'nuro-storage-state.json');
-    const raw = config.nuroStorageState.trim().startsWith('{')
-      ? config.nuroStorageState
-      : Buffer.from(config.nuroStorageState, 'base64').toString('utf8');
+    const raw = decodeStorageState(config.nuroStorageState);
+    JSON.parse(raw);
     await fs.writeFile(statePath, raw, 'utf8');
     storageState = statePath;
   }
