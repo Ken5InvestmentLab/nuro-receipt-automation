@@ -21,8 +21,19 @@ async function notify(message, success = true) {
   if (!response.ok) console.warn(`Discord notification failed: ${response.status}`);
 }
 
-function chooseNuroLink(links = []) {
-  return links.find(url => /nuro|cuenote/i.test(url)) || null;
+function cleanMailUrl(value = '') {
+  return value.trim().replace(/[)>】]$/, '').replace(/&amp;/g, '&');
+}
+
+function chooseNuroLink(mail) {
+  const body = mail?.body || '';
+  const explicit = body.match(/(?:■\s*)?NURO\s*光\s*マイページ[：:]\s*(https?:\/\/[^\s]+)/i);
+  if (explicit?.[1]) return cleanMailUrl(explicit[1]);
+
+  const links = mail?.links || [];
+  return links.find(url => /\/mypage\/?/i.test(url))
+    || links.find(url => /nuro\.jp\/mypage/i.test(url))
+    || null;
 }
 
 async function main() {
@@ -33,7 +44,9 @@ async function main() {
   }
 
   console.log(`Latest mail: ${mail.subject} (${new Date(mail.internalDate).toISOString()})`);
-  const invoicePath = await downloadNuroInvoice({ preferredUrl: chooseNuroLink(mail.links) });
+  const preferredUrl = chooseNuroLink(mail);
+  console.log(`Selected NURO link: ${preferredUrl || '(default mypage URL)'}`);
+  const invoicePath = await downloadNuroInvoice({ preferredUrl });
   const invoice = await parseInvoice(invoicePath);
 
   if (await expenseExists(invoice.date, invoice.amount)) {
