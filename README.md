@@ -68,9 +68,31 @@ npx playwright install chromium
 npm run nuro-login
 ```
 
-開いたブラウザでNURO光へログインし、ターミナルに戻ってEnterを押します。表示された長いBase64文字列を `NURO_STORAGE_STATE` に登録します。
+開いたブラウザでNURO光へログインし、ターミナルに戻ってEnterを押します。
 
-この値はログインCookieを含むため、リポジトリのファイルやIssueへ貼らないでください。
+現在のスクリプトは、ログイン状態のJSONをgzip圧縮してからBase64化します。ターミナルに表示された `gz:` から始まる1行の文字列全体を、GitHub Actions Secret `NURO_STORAGE_STATE` に登録してください。
+
+例：
+
+```text
+gz:H4sIAAAAA...
+```
+
+以前の非圧縮文字列はGitHub Secretsの48KB上限を超える場合があります。必ず最新ブランチを取得して `npm run nuro-login` をやり直してください。
+
+```bash
+git pull
+git checkout feature/initial-automation
+npm run nuro-login
+```
+
+出力の末尾に、元サイズと圧縮後サイズが表示されます。圧縮後が48KB以下ならそのまま保存できます。
+
+この値はログインCookieを含むため、リポジトリのファイル、Issue、チャットへ貼らないでください。
+
+### 圧縮後も保存できない場合
+
+圧縮後も48KBを超える場合は、GitHub公式の大容量Secret方式として、認証JSONをGPGで暗号化してリポジトリへ置き、復号パスフレーズだけをGitHub Secretへ登録する方式へ切り替えます。未暗号化のJSONは絶対にコミットしないでください。
 
 ## 実行時刻
 
