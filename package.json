@@ -8,4 +8,14 @@
     "start": "node src/index.mjs",
     "oauth": "node scripts/google-oauth.mjs",
     "nuro-login": "node scripts/nuro-login.mjs",
-    "check": "node --check src/index.mjs && node --check src/nuro.mjs && node --check
+    "check": "node --check src/index.mjs && node --check src/google.mjs && node --check src/nuro.mjs && node --check src/pdf.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0",
+    "pdf-parse": "^1.1.1",
+    "playwright": "^1.54.1"
+  }
+}
