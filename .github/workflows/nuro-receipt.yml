@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/nuro-receipt.yml'
+      - 'src/index.mjs'
+      - 'src/nuro.mjs'
   schedule:
     - cron: '30 2 * * *' # 11:30 JST
   workflow_dispatch:
@@ -31,7 +33,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: |
@@ -53,11 +55,14 @@ jobs:
           DRY_RUN: ${{ github.event_name == 'push' && 'true' || inputs.dry_run || 'false' }}
         run: npm start
 
-      - name: Upload error screenshot
+      - name: Upload error diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: nuro-error-${{ github.run_id }}
-          path: tmp/nuro-error.png
+          path: |
+            tmp/nuro-error.png
+            tmp/nuro-debug.json
+            tmp/nuro-debug.html
           if-no-files-found: ignore
           retention-days: 7
