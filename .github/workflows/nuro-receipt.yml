@@ -61,8 +61,9 @@ jobs:
         with:
           name: nuro-error-${{ github.run_id }}
           path: |
-            tmp/nuro-error.png
-            tmp/nuro-debug.txt
+            tmp/nuro-error-*.png
+            tmp/nuro-debug.json
             tmp/nuro-debug.html
+            tmp/nuro-trace.zip
           if-no-files-found: ignore
           retention-days: 7
