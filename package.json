@@ -1,0 +1,11 @@
+{
+  "name": "nuro-receipt-automation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Download NURO 光 invoices, archive them to Google Drive, and record expenses in Google Sheets.",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "oauth": "node scripts/google-oauth.mjs",
+    "nuro-login": "node scripts/nuro-login.mjs",
+    "check": "node --check src/index.mjs && node --check src/nuro.mjs && node --check
