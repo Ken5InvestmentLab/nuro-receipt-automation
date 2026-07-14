@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { config } from './config.mjs';
 import { findLatestNuroMail, uploadInvoice, expenseExists, appendExpense } from './google.mjs';
-import { downloadNuroInvoice } from './nuro.mjs';
+import { downloadNuroInvoice } from './nuro-v2.mjs';
 import { parseInvoice } from './pdf.mjs';
 
 async function notify(message, success = true) {
