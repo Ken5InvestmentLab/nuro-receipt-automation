@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/nuro-receipt.yml'
+      - 'package.json'
       - 'src/index.mjs'
       - 'src/nuro-v3.mjs'
   schedule:
@@ -39,6 +40,9 @@ jobs:
         run: |
           npm install
           npx playwright install --with-deps chromium
+
+      - name: Validate source
+        run: npm run check
 
       - name: Run NURO receipt automation
         env:
