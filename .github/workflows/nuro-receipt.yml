@@ -9,7 +9,7 @@ on:
       - 'src/index.mjs'
       - 'src/nuro-v3.mjs'
   schedule:
-    - cron: '36 9 * * *' # 18:36 JST
+    - cron: '36 9 11 * *' # 毎月11日 18:36 JST
   workflow_dispatch:
     inputs:
       dry_run:
